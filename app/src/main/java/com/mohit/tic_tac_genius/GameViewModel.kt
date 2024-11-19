@@ -7,7 +7,8 @@ import kotlinx.coroutines.flow.StateFlow
 data class GameState(
     val board: List<List<String>> = List(3) { List(3) { "" } },
     val isCellEnabled: Boolean = true,
-    val statusMessage: String = "Player X's turn"
+    val statusMessage: String = "Player X's turn",
+    val winner: String? = null // Track the winner
 )
 
 class GameViewModel : ViewModel() {
@@ -18,17 +19,19 @@ class GameViewModel : ViewModel() {
 
     fun onCellClick(row: Int, col: Int) {
         val currentBoard = _uiState.value.board.map { it.toMutableList() }
-        if (currentBoard[row][col].isEmpty()) {
+        if (currentBoard[row][col].isEmpty() && _uiState.value.winner == null) {
             currentBoard[row][col] = if (isXTurn) "X" else "O"
             isXTurn = !isXTurn
+            val winner = checkWin(currentBoard)
             _uiState.value = _uiState.value.copy(
                 board = currentBoard,
-                statusMessage = if (checkWin(currentBoard)) {
-                    "Player ${if (isXTurn) "O" else "X"} wins!"
+                statusMessage = if (winner != null) {
+                    "Player $winner wins!"
                 } else {
                     "Player ${if (isXTurn) "X" else "O"}'s turn"
                 },
-                isCellEnabled = !checkWin(currentBoard)
+                isCellEnabled = winner == null,
+                winner = winner
             )
         }
     }
@@ -38,7 +41,7 @@ class GameViewModel : ViewModel() {
         isXTurn = true
     }
 
-    private fun checkWin(board: List<List<String>>): Boolean {
+    private fun checkWin(board: List<List<String>>): String? {
         val lines = listOf(
             // Rows
             listOf(board[0][0], board[0][1], board[0][2]),
@@ -52,6 +55,10 @@ class GameViewModel : ViewModel() {
             listOf(board[0][0], board[1][1], board[2][2]),
             listOf(board[0][2], board[1][1], board[2][0])
         )
-        return lines.any { it.all { cell -> cell == "X" } || it.all { cell -> cell == "O" } }
+        return when {
+            lines.any { it.all { cell -> cell == "X" } } -> "X"
+            lines.any { it.all { cell -> cell == "O" } } -> "O"
+            else -> null
+        }
     }
 }

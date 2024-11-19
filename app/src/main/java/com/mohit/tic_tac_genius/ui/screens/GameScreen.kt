@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -12,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mohit.tic_tac_genius.GameViewModel
+import kotlinx.coroutines.delay
 
 @Composable
 fun GameScreen(viewModel: GameViewModel = viewModel()) {
@@ -76,6 +78,26 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = "Reset Game")
+        }
+    }
+
+    // Winner Popup Dialog
+    if (state.value.winner != null) {
+        AlertDialog(
+            onDismissRequest = { /* Prevent dismissal */ },
+            title = { Text(text = "Congratulations!") },
+            text = { Text(text = "Player ${state.value.winner} wins!") },
+            confirmButton = {
+                Button(onClick = { viewModel.resetGame() }) {
+                    Text("OK")
+                }
+            }
+        )
+
+        // Automatically reset the game after 2 seconds
+        LaunchedEffect(Unit) {
+            delay(2000)
+            viewModel.resetGame()
         }
     }
 }
