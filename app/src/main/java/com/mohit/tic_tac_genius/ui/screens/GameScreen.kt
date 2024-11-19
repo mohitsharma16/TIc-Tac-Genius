@@ -12,6 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mohit.tic_tac_genius.R
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.mohit.tic_tac_genius.GameViewModel
 import kotlinx.coroutines.delay
 
@@ -86,7 +91,26 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
         AlertDialog(
             onDismissRequest = { /* Prevent dismissal */ },
             title = { Text(text = "Congratulations!") },
-            text = { Text(text = "Player ${state.value.winner} wins!") },
+            text = {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ){
+                    //lottie party popper animation
+                    val compositionResult = rememberLottieComposition(
+                        spec = LottieCompositionSpec.RawRes(R.raw.party_popper)
+                    )
+                    val composition = compositionResult.value
+
+                    if (composition != null) {
+                        LottieAnimation(
+                            composition = composition,
+                            iterations = LottieConstants.IterateForever,
+                            modifier = Modifier.size(250.dp)
+                        )
+                    }
+                    Text(text = "Player ${state.value.winner} wins!")
+                }
+                 },
             confirmButton = {
                 Button(onClick = { viewModel.resetGame() }) {
                     Text("OK")
@@ -96,7 +120,7 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
 
         // Automatically reset the game after 2 seconds
         LaunchedEffect(Unit) {
-            delay(2000)
+            delay(5000)
             viewModel.resetGame()
         }
     }
