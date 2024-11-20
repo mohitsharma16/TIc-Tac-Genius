@@ -8,7 +8,10 @@ data class GameState(
     val board: List<List<String>> = List(3) { List(3) { "" } },
     val isCellEnabled: Boolean = true,
     val statusMessage: String = "Player X's turn",
-    val winner: String? = null // Track the winner
+    val winner: String? = null, // Track the winner
+    val playerXName: String = "", // Player X's name
+    val playerOName: String = "", // Player O's name
+    val isGameStarted: Boolean = false // Track if the game has started
 )
 
 class GameViewModel : ViewModel() {
@@ -16,6 +19,24 @@ class GameViewModel : ViewModel() {
     val uiState: StateFlow<GameState> get() = _uiState
 
     private var isXTurn = true
+
+    // Function to update Player X's name
+    fun updatePlayerXName(name: String) {
+        _uiState.value = _uiState.value.copy(playerXName = name)
+    }
+
+    // Function to update Player O's name
+    fun updatePlayerOName(name: String) {
+        _uiState.value = _uiState.value.copy(playerOName = name)
+    }
+
+    // Function to start the game
+    fun startGame() {
+        _uiState.value = _uiState.value.copy(
+            isGameStarted = true,
+            statusMessage = "${_uiState.value.playerXName.ifEmpty { "Player X" }}'s turn"
+        )
+    }
 
     fun onCellClick(row: Int, col: Int) {
         val currentBoard = _uiState.value.board.map { it.toMutableList() }
@@ -26,9 +47,9 @@ class GameViewModel : ViewModel() {
             _uiState.value = _uiState.value.copy(
                 board = currentBoard,
                 statusMessage = if (winner != null) {
-                    "Player $winner wins!"
+                    "Congratulations, ${if (winner == "X") _uiState.value.playerXName.ifEmpty { "Player X" } else _uiState.value.playerOName.ifEmpty { "Player O" }} wins!"
                 } else {
-                    "Player ${if (isXTurn) "X" else "O"}'s turn"
+                    "${if (isXTurn) _uiState.value.playerXName.ifEmpty { "Player X" } else _uiState.value.playerOName.ifEmpty { "Player O" }}'s turn"
                 },
                 isCellEnabled = winner == null,
                 winner = winner
@@ -37,7 +58,12 @@ class GameViewModel : ViewModel() {
     }
 
     fun resetGame() {
-        _uiState.value = GameState()
+        _uiState.value = _uiState.value.copy(
+            board = List(3) { List(3) { "" } },
+            isCellEnabled = true,
+            statusMessage = "${_uiState.value.playerXName.ifEmpty { "Player X" }}'s turn",
+            winner = null
+        )
         isXTurn = true
     }
 

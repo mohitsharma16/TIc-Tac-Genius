@@ -40,27 +40,51 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Game Board with Rounded Corners
-        Box(
-            modifier = Modifier
-                .size(320.dp)
-                .background(color = Color.White, shape = RoundedCornerShape(16.dp))
-                .padding(8.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            // Draw the grid lines
-            TicTacToeGrid()
+        // Name Input Fields
+        if (!state.value.isGameStarted) {
+            TextField(
+                value = state.value.playerXName,
+                onValueChange = { viewModel.updatePlayerXName(it) },
+                label = { Text("Player X Name") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            TextField(
+                value = state.value.playerOName,
+                onValueChange = { viewModel.updatePlayerOName(it) },
+                label = { Text("Player O Name") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = { viewModel.startGame() },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = "Start Game")
+            }
+        } else {
+            // Game Board with Rounded Corners
+            Box(
+                modifier = Modifier
+                    .size(320.dp)
+                    .background(color = Color.White, shape = RoundedCornerShape(16.dp))
+                    .padding(8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                // Draw the grid lines
+                TicTacToeGrid()
 
-            // Game Board
-            Column {
-                for (i in 0 until 3) {
-                    Row {
-                        for (j in 0 until 3) {
-                            BoardCell(
-                                value = state.value.board[i][j],
-                                onClick = { viewModel.onCellClick(i, j) },
-                                isEnabled = state.value.isCellEnabled && state.value.board[i][j].isEmpty()
-                            )
+                // Game Board
+                Column {
+                    for (i in 0 until 3) {
+                        Row {
+                            for (j in 0 until 3) {
+                                BoardCell(
+                                    value = state.value.board[i][j],
+                                    onClick = { viewModel.onCellClick(i, j) },
+                                    isEnabled = state.value.isCellEnabled && state.value.board[i][j].isEmpty()
+                                )
+                            }
                         }
                     }
                 }
@@ -94,8 +118,8 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
             text = {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
-                ){
-                    //lottie party popper animation
+                ) {
+                    // Lottie party popper animation
                     val compositionResult = rememberLottieComposition(
                         spec = LottieCompositionSpec.RawRes(R.raw.party_popper)
                     )
@@ -108,9 +132,17 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
                             modifier = Modifier.size(250.dp)
                         )
                     }
-                    Text(text = "Player ${state.value.winner} wins!")
+                    val winnerName = if (state.value.winner == "X") {
+                        state.value.playerXName
+                    } else {
+                        state.value.playerOName
+                    }
+                    Text(
+                        text = "$winnerName wins!",
+                        style = MaterialTheme.typography.headlineSmall
+                    )
                 }
-                 },
+            },
             confirmButton = {
                 Button(onClick = { viewModel.resetGame() }) {
                     Text("OK")
@@ -118,7 +150,7 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
             }
         )
 
-        // Automatically reset the game after 2 seconds
+        // Automatically reset the game after 5 seconds
         LaunchedEffect(Unit) {
             delay(5000)
             viewModel.resetGame()
